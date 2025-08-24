@@ -1,5 +1,11 @@
-# Steve AI Workspace Hub
+# STEVIE 2.0 - Multi-Agent AI Workspace Hub
 **🏠 Central Command Center for Multi-Agent Coordination**
+
+## 🚀 For Scout: Quick Deployment
+**Ready to run on your local VM!** See [`SCOUT_DEPLOYMENT_GUIDE.md`](./SCOUT_DEPLOYMENT_GUIDE.md) for complete setup.
+
+**Steve AI Application Repository**: https://github.com/donnywonny2025/Stevie.git  
+**Workspace Coordination**: https://github.com/donnywonny2025/STEVIE-2.0.git (this repo)
 
 ## 🚨 MANDATORY FIRST STEP - READ THIS!
 
