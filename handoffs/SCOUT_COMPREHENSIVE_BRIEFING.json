@@ -9,7 +9,12 @@
     "context_completeness": "100%",
     "estimated_read_time": "5_MINUTES",
     "github_repository": "https://github.com/donnywonny2025/STEVIE-2.0.git",
-    "github_access_note": "Full workspace context available in GitHub repository. Scout should access this repository for complete codebase analysis and coordination."
+    "steve_ai_application_repository": "https://github.com/donnywonny2025/Stevie.git",
+    "github_access_note": "Full workspace context available in STEVIE-2.0.git repository. Steve AI application code available in Stevie.git repository. Scout should access both repositories for complete codebase analysis and coordination.",
+    "repository_structure": {
+      "workspace_coordination": "STEVIE-2.0.git - Contains all handoffs, philosophy DNA, coordination protocols",
+      "application_code": "Stevie.git - Contains the actual Steve AI application code to optimize"
+    }
   },
 
   "executive_summary": {
@@ -316,7 +321,7 @@
   },
 
   "scout_onboarding_protocol": {
-    "step_1": "Access GitHub repository: https://github.com/donnywonny2025/STEVIE-2.0.git",
+    "step_1": "Access GitHub repositories: https://github.com/donnywonny2025/STEVIE-2.0.git (workspace) and https://github.com/donnywonny2025/Stevie.git (application)",
     "step_2": "Review complete workspace structure and coordination files",
     "step_3": "Verify Steve AI application status at http://localhost:5173",
     "step_4": "Update WORKSPACE_COORDINATION.json with Scout status: ACTIVE",
