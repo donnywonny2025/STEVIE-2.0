@@ -186,6 +186,45 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
     const totalMessageContent = messages.reduce((acc, message) => acc + message.content, '');
     logger.debug(`Total message length: ${totalMessageContent.split(' ').length}, words`);
     
+    // 🚀 FRONTEND FIX: Check for cached responses BEFORE creating dataStream
+    const currentUserMessage = messages[messages.length - 1];
+    const sessionId = generateId();
+    
+    // Extract clean user query (strip model metadata) for analysis
+    function extractUserQuery(rawQuery: string): string {
+      const cleanQuery = rawQuery.replace(/^\[Model:[^\]]+\]\s*\n*\s*\[Provider:[^\]]+\]\s*\n*\s*/i, '');
+      return cleanQuery.trim();
+    }
+    
+    const userQuery = extractUserQuery(currentUserMessage.content);
+    
+    console.log('🧠 PRE-DATASTREAM CHECK: Quick analysis for cached responses...');
+    
+    // Quick analysis to check for cached responses
+    const quickAnalysis = await queryAnalyzer.analyzeQuery(
+      userQuery,
+      messages.slice(0, -1)
+    );
+    
+    // If we have a cached response, use it directly without creating complex dataStream
+    if (quickAnalysis.fallback_strategy) {
+      const cachedResponse = getCachedResponse(quickAnalysis, userQuery);
+      if (cachedResponse) {
+        console.log('🎯 USING DIRECT CACHED RESPONSE STREAM:', cachedResponse);
+        
+        // Track token savings
+        const tokenDisplay = tokenManager.trackSavings(
+          sessionId,
+          quickAnalysis.query_type,
+          quickAnalysis.fallback_strategy.estimated_tokens
+        );
+        
+        // Return cached response directly using the working stream function
+        return createCachedResponseStream(cachedResponse, tokenDisplay, null);
+      }
+    }
+    
+    console.log('🔍 EXECUTION CHECKPOINT: No cached response, proceeding with full dataStream');
     console.log('🔍 EXECUTION CHECKPOINT: About to create dataStream with Intelligence processing');
 
     const dataStream = createDataStream({
@@ -316,87 +355,8 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
           confidence: analysis.confidence_score
         });
         
-        // Step 2: Check for cached fallback responses (fastest path)
-        if (analysis.fallback_strategy) {
-          logger.info(`🎯 Using cached response: ${analysis.fallback_strategy.strategy} (${analysis.fallback_strategy.estimated_tokens} tokens)`);
-          
-          // Track massive token savings
-          const tokenDisplay = tokenManager.trackSavings(
-            sessionId,
-            analysis.query_type,
-            analysis.fallback_strategy.estimated_tokens
-          );
-          
-          // Notify UI of intelligence processing
-          dataStream.writeMessageAnnotation({
-            type: 'intelligence',
-            data: {
-              steps: [
-                { id: '1', action: 'analyze', status: 'complete' },
-                { id: '2', action: 'fallback', status: 'complete', tokens: analysis.fallback_strategy.estimated_tokens }
-              ],
-              isVisible: true
-            }
-          });
-          
-          // Return cached response directly (bypassing entire context building)
-          const cachedResponse = getCachedResponse(analysis, userQuery);
-          if (cachedResponse) {
-            console.log('🎯 WRITING CACHED RESPONSE TO STREAM:', cachedResponse);
-            
-            // 🚀 QODER FIX: Write cached response as single text block (matches AI SDK format)
-            dataStream.writeData({
-              type: 'text',
-              content: cachedResponse
-            });
-            
-            // Write final completion
-            dataStream.writeMessageAnnotation({
-              type: 'usage',
-              value: {
-                completionTokens: analysis.fallback_strategy.estimated_tokens,
-                promptTokens: 0,
-                totalTokens: analysis.fallback_strategy.estimated_tokens,
-              }
-            });
-            
-            // Write token usage annotation with the ACTUAL efficient usage
-            dataStream.writeMessageAnnotation({
-              type: 'tokenUsage',
-              data: {
-                queryType: analysis.query_type,
-                tokensUsed: analysis.fallback_strategy.estimated_tokens,
-                tokensSaved: tokenDisplay.tokens_saved,
-                efficiencyGain: tokenDisplay.efficiency_gain,
-                source: 'cached_response'
-              }
-            });
-            
-            return; // This now properly exits the execute function
-          }
-          
-          // 🚀 QODER SAFETY: Fallback for failed cached responses
-          if (!cachedResponse && isConversational) {
-            console.log('⚠️ FALLBACK: Cached response failed for conversational query');
-            const fallbackResponse = "Hello! I'm here to help you build amazing things. What would you like to create today? 🚀";
-            
-            dataStream.writeData({
-              type: 'text',
-              content: fallbackResponse
-            });
-            
-            dataStream.writeMessageAnnotation({
-              type: 'usage',
-              value: {
-                completionTokens: 15,
-                promptTokens: 0,
-                totalTokens: 15,
-              }
-            });
-            
-            return;
-          }
-        }
+        // Step 2: We're in the dataStream, so no cached responses here
+        // (Cached responses are handled at the top level before dataStream creation)
         
         // Step 3: Intelligent context retrieval (only if needed)
         logger.info('🔍 Scout Intelligence: Finding relevant context...');
@@ -852,10 +812,18 @@ function createCachedResponseStream(response: string, tokenDisplay: any, dataStr
   const stream = new ReadableStream({
     start(controller) {
       try {
-        // Write the response
-        controller.enqueue(encoder.encode(`0:"${response.replace(/"/g, '\\"')}\n"`));
+        // Write the response - properly escape quotes and newlines for JSON
+        const escapedResponse = response
+          .replace(/\\/g, '\\\\')  // Escape backslashes first
+          .replace(/"/g, '\\"')     // Escape quotes
+          .replace(/\n/g, '\\n')    // Escape newlines
+          .replace(/\r/g, '\\r')    // Escape carriage returns
+          .replace(/\t/g, '\\t');   // Escape tabs
         
-        // Write token usage annotation
+        // Write the response with proper newline separation
+        controller.enqueue(encoder.encode(`0:"${escapedResponse}"\n`));
+        
+        // Write token usage annotation with proper formatting
         const annotation = JSON.stringify({
           type: 'tokenUsage',
           data: {
@@ -868,12 +836,13 @@ function createCachedResponseStream(response: string, tokenDisplay: any, dataStr
         });
         controller.enqueue(encoder.encode(`2:[{"tokenUsage":${annotation}}]\n`));
         
-        // Signal completion
+        // Signal completion with proper newline
         controller.enqueue(encoder.encode('d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":' + 
           Math.ceil(response.length / 4) + ',"totalTokens":' + Math.ceil(response.length / 4) + '}}\n'));
         
         controller.close();
       } catch (error) {
+        console.error('🚨 Cached response stream error:', error);
         controller.error(error);
       }
     }
