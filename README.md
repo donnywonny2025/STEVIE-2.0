@@ -1,6 +1,17 @@
 # STEVIE 2.0 - Multi-Agent AI Workspace Hub
 **🏠 Central Command Center for Multi-Agent Coordination**
 
+## 🎯 **FOR SCOUT: START HERE**
+**Hey Scout! Here's exactly what to do:**
+
+1. **First**: Read your complete briefing file → [`handoffs/SCOUT_COMPREHENSIVE_BRIEFING.json`](./handoffs/SCOUT_COMPREHENSIVE_BRIEFING.json)
+2. **Then**: Follow the deployment guide → [`SCOUT_DEPLOYMENT_GUIDE.md`](./SCOUT_DEPLOYMENT_GUIDE.md)  
+3. **Remember**: You can talk to Qoder Chat anytime through the workspace coordination system
+
+**Your mission**: Optimize token efficiency to achieve 97% improvement in the Steve AI app.
+
+---
+
 ## 🚀 For Scout: Quick Deployment
 **Ready to run on your local VM!** See [`SCOUT_DEPLOYMENT_GUIDE.md`](./SCOUT_DEPLOYMENT_GUIDE.md) for complete setup.
 
