@@ -1,0 +1,45 @@
+{
+  "task_type": "URGENT_TOKEN_EFFICIENCY_FIX",
+  "priority": "CRITICAL",
+  "solution_identified": "Query preprocessing to strip model metadata",
+  
+  "problem_summary": {
+    "issue": "User input 'hello' becomes '[Model: gemini-2.5-flash]\\n\\n[Provider: Google]\\n\\nhello'",
+    "impact": "Breaks pure_greeting pattern matching, causes 2,752 tokens instead of 45",
+    "root_cause": "UI prepends model metadata that Intelligence patterns don't expect"
+  },
+  
+  "solution_implementation": {
+    "file_to_edit": "stevie-app/bolt.diy/app/routes/api.chat.ts",
+    "location": "Before queryAnalyzer.analyzeQuery call (around line 140)",
+    "add_function": {
+      "name": "extractUserQuery",
+      "code": "function extractUserQuery(rawQuery: string): string {\n  // Remove model metadata pattern: [Model: ...] [Provider: ...]\n  const cleanQuery = rawQuery.replace(/^\\[Model:[^\\]]+\\]\\s*\\n*\\s*\\[Provider:[^\\]]+\\]\\s*\\n*\\s*/i, '');\n  return cleanQuery.trim();\n}"
+    },
+    "modify_intelligence_call": {
+      "old_code": "const analysis = await queryAnalyzer.analyzeQuery(\n  currentUserMessage.content,\n  messages.slice(0, -1)\n);",
+      "new_code": "// Extract clean user query (strip model metadata)\nconst userQuery = extractUserQuery(currentUserMessage.content);\n\nconst analysis = await queryAnalyzer.analyzeQuery(\n  userQuery,\n  messages.slice(0, -1)\n);\n\nconsole.log('🧹 QUERY CLEANING:', {\n  original: currentUserMessage.content,\n  cleaned: userQuery,\n  isContaminated: userQuery !== currentUserMessage.content\n});"
+    }
+  },
+  
+  "testing_protocol": {
+    "test_case_1": {
+      "input": "hello",
+      "expected_output": "Pattern match 'pure_greeting', ~45 tokens",
+      "validation": "Console shows '✅ FALLBACK MATCH FOUND: pure_greeting'"
+    },
+    "test_case_2": {
+      "input": "[Model: gemini-2.5-flash]\\n\\n[Provider: Google]\\n\\nhello",
+      "expected_output": "After cleaning → Pattern match, ~45 tokens",
+      "validation": "Console shows query cleaning and successful pattern match"
+    }
+  },
+  
+  "success_criteria": {
+    "primary": "Hello query uses 45 tokens instead of 2,752 tokens",
+    "efficiency": "97% token efficiency achieved",
+    "pattern_matching": "pure_greeting pattern successfully matches cleaned input"
+  },
+  
+  "instructions": "Add the extractUserQuery function and modify the Intelligence call to use cleaned input. Test with 'hello' to verify 97% efficiency target is achieved."
+}
