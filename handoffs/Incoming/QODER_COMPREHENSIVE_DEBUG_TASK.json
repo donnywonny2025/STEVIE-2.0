@@ -1,0 +1,66 @@
+{
+  "task_type": "comprehensive_investigation_and_git_push",
+  "priority": "URGENT",
+  "objective": "Find execution gap in Intelligence system and push all findings to Git for Scout analysis",
+  
+  "investigation_areas": [
+    {
+      "area": "Route Execution Flow",
+      "actions": [
+        "Add debug logs at every major step in api.chat.ts execution path",
+        "Trace from request entry to Intelligence system calls",
+        "Identify where execution might be bypassing Intelligence code",
+        "Check if any early returns skip Intelligence processing"
+      ]
+    },
+    
+    {
+      "area": "Intelligence System Initialization",
+      "actions": [
+        "Verify queryAnalyzer constructor actually runs",
+        "Check if Intelligence imports resolve correctly", 
+        "Test if AdvancedQueryAnalyzer methods are accessible",
+        "Validate SMART_FALLBACK_CACHE is properly loaded"
+      ]
+    },
+    
+    {
+      "area": "Server State vs Code State",
+      "actions": [
+        "Check if running server matches current code files",
+        "Verify no build/compilation issues blocking updates",
+        "Test if file changes are being picked up by dev server",
+        "Compare what's in Git vs what's actually executing"
+      ]
+    },
+    
+    {
+      "area": "Error Handling and Silent Failures", 
+      "actions": [
+        "Check for try/catch blocks that might hide Intelligence errors",
+        "Look for async/await issues that could break execution flow",
+        "Verify no import errors or missing dependencies",
+        "Test if Intelligence methods throw unhandled exceptions"
+      ]
+    }
+  ],
+  
+  "git_deliverables": [
+    "Updated api.chat.ts with comprehensive debug logging",
+    "Intelligence system status report (markdown file)",
+    "Execution flow analysis (step-by-step trace)",  
+    "Problem areas identified (list of potential failure points)",
+    "Test results (what happens when 'hello' is processed)",
+    "Server logs and console output (if available)",
+    "Current code state snapshot (all Intelligence files)"
+  ],
+  
+  "debug_strategy": [
+    "Add console.log('🔍 EXECUTION CHECKPOINT: [description]') at every major step",
+    "Test with simple 'hello' query and document which checkpoints appear",
+    "Create execution flow diagram showing where flow stops",
+    "Push all debug code and findings to Git immediately"
+  ],
+  
+  "instructions": "After investigation, push EVERYTHING to Git including debug code, findings, and analysis. Scout will examine the repository directly to identify the root cause and solution."
+}

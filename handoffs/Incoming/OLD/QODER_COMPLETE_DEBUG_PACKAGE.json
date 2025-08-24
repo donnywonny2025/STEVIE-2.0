@@ -1,0 +1,145 @@
+{
+  "task_metadata": {
+    "title": "STEVIE Intelligence System Complete Debug & Fix Implementation",
+    "type": "comprehensive_debugging_with_ui",
+    "priority": "CRITICAL",
+    "estimated_time": "45-60 minutes",
+    "deliverables": [
+      "Debug logging in Intelligence system",
+      "IntelligenceDebugConsole React component",
+      "BaseChat integration", 
+      "Token efficiency restoration to 97% target",
+      "Real-time monitoring UI"
+    ]
+  },
+
+  "problem_analysis": {
+    "core_issue": "STEVIE 'hello' query using 2,752 tokens instead of 20-50 tokens",
+    "root_cause": "Intelligence fallback system not triggering - pattern matching failure in AdvancedQueryAnalyzer",
+    "expected_flow": "Query → analyzeQuery() → checkFallbackCache() → getCachedResponse() → 45 tokens",
+    "actual_flow": "Query → analyzeQuery() → full context pipeline → 2,752 tokens",
+    "efficiency_loss": "98.4% - complete failure of core STEVIE value proposition"
+  },
+
+  "implementation_tasks": [
+    {
+      "task_id": "DEBUG_ANALYZER",
+      "file": "/stevie-app/bolt.diy/app/lib/intelligence/AdvancedQueryAnalyzer.ts",
+      "action": "Add comprehensive debug logging to checkFallbackCache method",
+      "location": "Around line 200",
+      "code_replacement": {
+        "find_method": "private checkFallbackCache(query: string): any | null {",
+        "replace_with_complete_method": "private checkFallbackCache(query: string): any | null {\n    const normalizedQuery = query.trim().toLowerCase();\n    \n    // 🔍 COMPREHENSIVE FALLBACK DEBUG LOGGING\n    console.log('🔍 FALLBACK CACHE DEBUG:', {\n      originalQuery: query,\n      normalizedQuery,\n      queryLength: normalizedQuery.length,\n      availablePatterns: Object.keys(SMART_FALLBACK_CACHE)\n    });\n    \n    for (const [key, cached] of Object.entries(SMART_FALLBACK_CACHE)) {\n      const matched = cached.pattern.test(normalizedQuery);\n      console.log(`🧪 Testing pattern '${key}':`, {\n        pattern: cached.pattern.source,\n        flags: cached.pattern.flags,\n        testInput: normalizedQuery,\n        matched,\n        expectedTokens: cached.tokens\n      });\n      \n      if (matched) {\n        console.log(`✅ FALLBACK MATCH FOUND: ${key}`, {\n          strategy: 'cached_response',\n          tokens: cached.tokens,\n          response_preview: cached.response.slice(0, 50) + '...'\n        });\n        return cached;\n      }\n    }\n    \n    console.log('❌ NO FALLBACK MATCHES FOUND - Will use full context pipeline');\n    return null;\n  }"
+      },
+      "additional_debug": {
+        "add_to_analyzeQuery_method": "// Add this at the start of analyzeQuery method (around line 155)\nconsole.log('🚀 ANALYZER START:', { query, contextLength: conversationContext.length });"
+      }
+    },
+
+    {
+      "task_id": "DEBUG_API_ROUTE", 
+      "file": "/stevie-app/bolt.diy/app/routes/api.chat.ts",
+      "action": "Add Intelligence system debug logging",
+      "location": "After line 143 (after analyzeQuery call)",
+      "code_addition": "        // 🧠 INTELLIGENCE SYSTEM DEBUG LOGGING\n        console.log('📊 QUERY ANALYSIS COMPLETE:', {\n          originalQuery: currentUserMessage.content,\n          queryType: analysis.query_type,\n          confidenceScore: analysis.confidence_score,\n          hasFallbackStrategy: !!analysis.fallback_strategy,\n          fallbackDetails: analysis.fallback_strategy ? {\n            strategy: analysis.fallback_strategy.strategy,\n            reason: analysis.fallback_strategy.reason,\n            estimatedTokens: analysis.fallback_strategy.estimated_tokens\n          } : null,\n          contextRequirements: {\n            level: analysis.context_requirements.level,\n            estimatedTokens: analysis.context_requirements.estimated_tokens,\n            requiresHistory: analysis.context_requirements.requires_history,\n            requiresFiles: analysis.context_requirements.requires_files\n          }\n        });\n        \n        // 🎯 FALLBACK EXECUTION TRACKING\n        if (analysis.fallback_strategy) {\n          console.log('🎯 ATTEMPTING CACHED RESPONSE:', {\n            strategy: analysis.fallback_strategy.strategy,\n            estimatedTokens: analysis.fallback_strategy.estimated_tokens\n          });\n        } else {\n          console.log('⚠️ NO FALLBACK - PROCEEDING TO FULL CONTEXT:', {\n            contextLevel: analysis.context_requirements.level,\n            estimatedTokens: analysis.context_requirements.estimated_tokens\n          });\n        }"
+    },
+
+    {
+      "task_id": "ADD_CACHED_RESPONSE_DEBUG",
+      "file": "/stevie-app/bolt.diy/app/routes/api.chat.ts", 
+      "action": "Add debug logging to getCachedResponse function",
+      "location": "Inside getCachedResponse function around line 47",
+      "code_addition": "  // Add this at the start of getCachedResponse function\n  console.log('🎯 GET CACHED RESPONSE:', { \n    hasAnalysis: !!analysis,\n    hasFallbackStrategy: !!(analysis && analysis.fallback_strategy),\n    strategy: analysis && analysis.fallback_strategy ? analysis.fallback_strategy.strategy : 'none',\n    userQuery \n  });\n  \n  if (!analysis.fallback_strategy) {\n    console.log('❌ NO FALLBACK STRATEGY PROVIDED TO getCachedResponse');\n    return null;\n  }"
+    },
+
+    {
+      "task_id": "CREATE_DEBUG_CONSOLE",
+      "file": "/stevie-app/bolt.diy/app/components/chat/IntelligenceDebugConsole.tsx",
+      "action": "Create new file with complete React component",
+      "code_content": "import React, { useState, useEffect } from 'react';\nimport { Card } from '../ui/Card';\nimport { Button } from '../ui/Button';\nimport { Badge } from '../ui/Badge';\n\ninterface DebugLog {\n  timestamp: Date;\n  query: string;\n  classification: string;\n  fallbackFound: boolean;\n  tokensUsed: number;\n  tokensSaved: number;\n  debugPath: string[];\n  analysisResult?: any;\n}\n\ninterface IntelligenceDebugConsoleProps {\n  isVisible?: boolean;\n  onToggle?: () => void;\n}\n\nexport function IntelligenceDebugConsole({ \n  isVisible = false, \n  onToggle \n}: IntelligenceDebugConsoleProps) {\n  const [logs, setLogs] = useState<DebugLog[]>([]);\n  const [selectedLog, setSelectedLog] = useState<DebugLog | null>(null);\n  const [isExpanded, setIsExpanded] = useState(false);\n\n  // Listen for debug events from the Intelligence system\n  useEffect(() => {\n    const handleDebugEvent = (event: CustomEvent<DebugLog>) => {\n      setLogs(prev => [event.detail, ...prev.slice(0, 19)]); // Keep last 20 logs\n    };\n\n    window.addEventListener('intelligence:debug', handleDebugEvent as EventListener);\n    return () => window.removeEventListener('intelligence:debug', handleDebugEvent as EventListener);\n  }, []);\n\n  if (!isVisible) {\n    return (\n      <div className=\"fixed bottom-4 right-4 z-50\">\n        <Button\n          onClick={onToggle}\n          variant=\"outline\"\n          size=\"sm\"\n          className=\"bg-white/90 backdrop-blur-sm border-orange-200 text-orange-700 hover:bg-orange-50\"\n        >\n          🧠 Debug ({logs.length})\n        </Button>\n      </div>\n    );\n  }\n\n  const currentEfficiency = logs.length > 0 \n    ? Math.round((logs[0].tokensSaved / (logs[0].tokensUsed + logs[0].tokensSaved)) * 100)\n    : 0;\n\n  return (\n    <div className=\"fixed bottom-4 right-4 w-96 max-h-96 z-50\">\n      <Card className=\"bg-white/95 backdrop-blur-sm border-orange-200 shadow-lg\">\n        <div className=\"p-4\">\n          {/* Header */}\n          <div className=\"flex items-center justify-between mb-4\">\n            <div className=\"flex items-center gap-2\">\n              <span className=\"text-lg\">🧠</span>\n              <h3 className=\"font-semibold text-gray-900\">Intelligence Debug</h3>\n              {logs.length > 0 && (\n                <Badge \n                  variant={currentEfficiency > 90 ? \"success\" : currentEfficiency > 50 ? \"warning\" : \"destructive\"}\n                >\n                  {currentEfficiency}% Efficient\n                </Badge>\n              )}\n            </div>\n            <div className=\"flex gap-2\">\n              <Button\n                onClick={() => setIsExpanded(!isExpanded)}\n                variant=\"ghost\"\n                size=\"sm\"\n              >\n                {isExpanded ? '📋' : '📊'}\n              </Button>\n              <Button\n                onClick={onToggle}\n                variant=\"ghost\"\n                size=\"sm\"\n              >\n                ✕\n              </Button>\n            </div>\n          </div>\n\n          {/* Current Status */}\n          {logs.length > 0 && (\n            <div className=\"mb-4 p-3 bg-gray-50 rounded-lg\">\n              <div className=\"flex items-center justify-between mb-2\">\n                <span className=\"text-sm font-medium\">Latest Query</span>\n                <span className=\"text-xs text-gray-500\">\n                  {logs[0].timestamp.toLocaleTimeString()}\n                </span>\n              </div>\n              <div className=\"text-sm text-gray-700 mb-2\">\"{logs[0].query}\"</div>\n              <div className=\"flex items-center gap-4 text-xs\">\n                <Badge variant=\"secondary\">{logs[0].classification}</Badge>\n                <span className={`font-medium ${logs[0].fallbackFound ? 'text-green-600' : 'text-red-600'}`}>\n                  {logs[0].fallbackFound ? '✅ Fallback' : '❌ Full Context'}\n                </span>\n                <span>🎯 {logs[0].tokensUsed} tokens</span>\n                {logs[0].tokensSaved > 0 && (\n                  <span className=\"text-green-600\">💰 Saved {logs[0].tokensSaved}</span>\n                )}\n              </div>\n            </div>\n          )}\n\n          {/* Log History */}\n          <div className=\"space-y-2 max-h-48 overflow-y-auto\">\n            {logs.length === 0 ? (\n              <div className=\"text-center text-gray-500 text-sm py-4\">\n                No debug logs yet. Try sending a message to see Intelligence analysis.\n              </div>\n            ) : (\n              logs.map((log, idx) => (\n                <div\n                  key={idx}\n                  className={`p-2 rounded cursor-pointer transition-colors ${\n                    selectedLog === log \n                      ? 'bg-blue-100 border border-blue-300' \n                      : 'bg-gray-50 hover:bg-gray-100'\n                  }`}\n                  onClick={() => setSelectedLog(log === selectedLog ? null : log)}\n                >\n                  <div className=\"flex items-center justify-between\">\n                    <span className=\"text-sm font-medium truncate flex-1\">\n                      \"{log.query}\"\n                    </span>\n                    <div className=\"flex items-center gap-2 ml-2\">\n                      <Badge \n                        size=\"sm\" \n                        variant={log.fallbackFound ? \"success\" : \"destructive\"}\n                      >\n                        {log.tokensUsed}\n                      </Badge>\n                      <span className=\"text-xs text-gray-500\">\n                        {log.timestamp.toLocaleTimeString().slice(0, 5)}\n                      </span>\n                    </div>\n                  </div>\n                  <div className=\"text-xs text-gray-500 mt-1\">\n                    {log.classification} • {log.fallbackFound ? 'Cached' : 'Full Pipeline'}\n                  </div>\n                </div>\n              ))\n            )}\n          </div>\n        </div>\n      </Card>\n    </div>\n  );\n}\n\n// Hook for sending debug events\nexport function useIntelligenceDebug() {\n  const logDebug = (debugData: Omit<DebugLog, 'timestamp'>) => {\n    const event = new CustomEvent('intelligence:debug', {\n      detail: { ...debugData, timestamp: new Date() }\n    });\n    window.dispatchEvent(event);\n  };\n\n  return { logDebug };\n}\n\n// Helper function to integrate into api.chat.ts\nexport function broadcastIntelligenceDebug(\n  query: string,\n  analysis: any,\n  tokensUsed: number,\n  tokensSaved: number,\n  debugPath: string[]\n) {\n  const event = new CustomEvent('intelligence:debug', {\n    detail: {\n      timestamp: new Date(),\n      query,\n      classification: analysis.query_type || 'UNKNOWN',\n      fallbackFound: !!analysis.fallback_strategy,\n      tokensUsed,\n      tokensSaved,\n      debugPath,\n      analysisResult: analysis\n    }\n  });\n  window.dispatchEvent(event);\n}"
+    },
+
+    {
+      "task_id": "INTEGRATE_DEBUG_CONSOLE",
+      "file": "/stevie-app/bolt.diy/app/components/chat/BaseChat.tsx", 
+      "action": "Add IntelligenceDebugConsole to BaseChat component",
+      "integration_steps": [
+        "Import the component: import { IntelligenceDebugConsole } from './IntelligenceDebugConsole';",
+        "Add state for debug visibility: const [debugVisible, setDebugVisible] = useState(false);",
+        "Add the component before closing div: <IntelligenceDebugConsole isVisible={debugVisible} onToggle={() => setDebugVisible(!debugVisible)} />"
+      ]
+    },
+
+    {
+      "task_id": "ADD_DEBUG_BROADCAST",
+      "file": "/stevie-app/bolt.diy/app/routes/api.chat.ts",
+      "action": "Add debug broadcasting after token tracking",
+      "location": "After line 189 (after token usage annotation)",
+      "code_addition": "            // 📡 BROADCAST DEBUG INFO TO UI\n            if (typeof window !== 'undefined') {\n              const debugPath = [\n                'Query received: ' + currentUserMessage.content,\n                'Analysis: ' + analysis.query_type,\n                'Fallback: ' + (analysis.fallback_strategy?.strategy || 'none'),\n                'Tokens: ' + (analysis.fallback_strategy?.estimated_tokens || analysis.context_requirements.estimated_tokens),\n                'Response: cached'\n              ];\n              \n              window.dispatchEvent(new CustomEvent('intelligence:debug', {\n                detail: {\n                  timestamp: new Date(),\n                  query: currentUserMessage.content,\n                  classification: analysis.query_type,\n                  fallbackFound: !!analysis.fallback_strategy,\n                  tokensUsed: analysis.fallback_strategy?.estimated_tokens || 0,\n                  tokensSaved: 2500, // Approximate savings from full context\n                  debugPath,\n                  analysisResult: analysis\n                }\n              }));\n            }"
+    }
+  ],
+
+  "testing_protocol": {
+    "test_cases": [
+      {
+        "input": "hello",
+        "expected_console_logs": [
+          "🔍 FALLBACK CACHE DEBUG: { originalQuery: 'hello', normalizedQuery: 'hello', ... }",
+          "🧪 Testing pattern 'pure_greeting': { pattern: ..., matched: true }",
+          "✅ FALLBACK MATCH FOUND: pure_greeting",
+          "📊 QUERY ANALYSIS COMPLETE: { queryType: 'SIMPLE', hasFallbackStrategy: true }",
+          "🎯 ATTEMPTING CACHED RESPONSE: { strategy: 'cached_response', estimatedTokens: 60 }"
+        ],
+        "expected_result": "Token count drops to ~45-60 tokens",
+        "expected_ui": "Debug console shows 'hello' with ✅ Fallback and green efficiency badge"
+      },
+      {
+        "input": "thanks",
+        "expected_result": "Token count ~25 tokens, gratitude fallback triggered"
+      },
+      {
+        "input": "can you help debug this error?", 
+        "expected_result": "No fallback, full context pipeline, ~800 tokens (but working correctly)"
+      }
+    ]
+  },
+
+  "success_criteria": {
+    "primary_goal": "hello query drops from 2,752 to ~45 tokens (98.4% improvement)",
+    "secondary_goals": [
+      "Debug console shows real-time Intelligence analysis",
+      "All fallback patterns work correctly",
+      "Full context pipeline still works for complex queries",
+      "UI provides clear efficiency feedback"
+    ]
+  },
+
+  "likely_fixes_needed": {
+    "if_pattern_not_matching": {
+      "issue": "Regex pattern not matching 'hello'",
+      "fix": "Check if pattern needs modification or if query normalization has issues"
+    },
+    "if_fallback_not_returned": {
+      "issue": "checkFallbackCache returns match but analyzeQuery ignores it", 
+      "fix": "Ensure buildCachedAnalysis is called when fallback found"
+    },
+    "if_cached_response_not_called": {
+      "issue": "getCachedResponse never executes despite fallback_strategy existing",
+      "fix": "Check if condition at line 148 in api.chat.ts is correct"
+    }
+  },
+
+  "implementation_notes": {
+    "development_mode": "Keep debug logging for development, can be removed later",
+    "ui_integration": "Debug console should toggle on/off easily", 
+    "performance": "All debug logging is local, no additional API calls",
+    "fallback_safety": "If Intelligence fails, ensure graceful fallback to full context"
+  },
+
+  "coordination_update": {
+    "file_to_update": "/stevie-local/WORKSPACE_COORDINATION.json",
+    "update_path": "system_status.intelligence_stack.scout.efficiency",
+    "update_from": "97%",
+    "update_to": "DEBUGGING_IN_PROGRESS"
+  }
+}

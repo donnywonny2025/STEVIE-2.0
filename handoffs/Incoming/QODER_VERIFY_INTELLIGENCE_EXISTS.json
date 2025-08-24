@@ -1,0 +1,67 @@
+{
+  "task_metadata": {
+    "title": "VERIFY Intelligence System Code Actually Exists in API Route",
+    "type": "urgent_verification",
+    "priority": "IMMEDIATE",
+    "estimated_time": "5 minutes"
+  },
+
+  "problem_diagnosis": {
+    "symptoms": "Console shows regular Bolt.diy logs but ZERO Intelligence system debug logs",
+    "likely_causes": [
+      "Intelligence system code never actually added to api.chat.ts",
+      "Intelligence code wrapped in conditional that prevents execution",
+      "Intelligence imports failing silently",
+      "Code added to wrong location in api.chat.ts"
+    ]
+  },
+
+  "verification_steps": [
+    {
+      "step": 1,
+      "action": "Check if Intelligence imports exist in api.chat.ts",
+      "location": "Top of file around lines 17-23",
+      "look_for": [
+        "import { QualityAwareQueryAnalyzer } from '~/lib/intelligence/QualityAwareQueryAnalyzer';",
+        "import { IntelligentContextRetrieval } from '~/lib/intelligence/IntelligentContextRetrieval';",
+        "import { QualityAwareContextManager } from '~/lib/intelligence/QualityAwareContextManager';",
+        "import { TokenManager } from '~/lib/intelligence/TokenManager';"
+      ]
+    },
+    
+    {
+      "step": 2,
+      "action": "Check if Intelligence initialization exists",
+      "location": "Around lines 30-35",
+      "look_for": [
+        "const queryAnalyzer = new QualityAwareQueryAnalyzer();",
+        "const contextRetrieval = new IntelligentContextRetrieval();",
+        "const contextManager = new QualityAwareContextManager();",
+        "const tokenManager = new TokenManager();"
+      ]
+    },
+
+    {
+      "step": 3,
+      "action": "Most important - Check if Intelligence code block exists in dataStream.execute",
+      "location": "Inside dataStream.execute function around lines 140-200",
+      "look_for": [
+        "const analysis = await queryAnalyzer.analyzeQuery(",
+        "if (analysis.fallback_strategy) {",
+        "const cachedResponse = getCachedResponse(analysis, currentUserMessage.content);"
+      ]
+    }
+  ],
+
+  "simple_test": {
+    "action": "Add this VERY SIMPLE test right after currentUserMessage definition",
+    "code": "        const currentUserMessage = messages[messages.length - 1];\n        \n        // 🚨 SIMPLE TEST - This should ALWAYS appear in console\n        console.log('🚨 SIMPLE TEST: API route reached, query =', currentUserMessage.content);\n        \n        // Test if Intelligence classes exist\n        console.log('🧪 Intelligence Test:', {\n          queryAnalyzerExists: !!queryAnalyzer,\n          queryAnalyzerType: typeof queryAnalyzer,\n          hasAnalyzeMethod: !!(queryAnalyzer && queryAnalyzer.analyzeQuery)\n        });",
+    "expected_result": "Should see '🚨 SIMPLE TEST:' in console when typing hello"
+  },
+
+  "if_no_intelligence_code_found": {
+    "problem": "Intelligence system was never actually integrated into api.chat.ts",
+    "solution": "The Intelligence pipeline needs to be properly added to the dataStream.execute function",
+    "immediate_action": "Re-implement the Intelligence system integration in the correct location"
+  }
+}

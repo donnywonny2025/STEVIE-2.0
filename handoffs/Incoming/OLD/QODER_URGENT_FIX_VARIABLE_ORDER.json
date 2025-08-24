@@ -1,0 +1,39 @@
+{
+  "task_metadata": {
+    "title": "QUICK FIX - Move Debug Logging to Correct Position",
+    "type": "urgent_bug_fix",
+    "priority": "IMMEDIATE",
+    "estimated_time": "5 minutes"
+  },
+
+  "problem_diagnosis": {
+    "error": "Cannot access 'currentUserMessage' before initialization",
+    "root_cause": "Debug logging placed before currentUserMessage variable is defined",
+    "impact": "API route crashes before Intelligence system runs",
+    "solution": "Move debug logging to after currentUserMessage definition"
+  },
+
+  "immediate_fix": {
+    "file": "/stevie-app/bolt.diy/app/routes/api.chat.ts",
+    "action": "REMOVE the debug logging from current location and place it AFTER currentUserMessage is defined",
+    "current_problematic_code": "// Remove this debug code from wherever it was placed before currentUserMessage definition\nconsole.log('🚨 API ROUTE DEBUG: Intelligence pipeline starting...');\nconsole.log('📍 Message received:', currentUserMessage.content);",
+    
+    "correct_placement": {
+      "find_this_line": "const currentUserMessage = messages[messages.length - 1];",
+      "add_debug_AFTER_this_line": "        const currentUserMessage = messages[messages.length - 1];\n        \n        // ✅ CORRECT DEBUG PLACEMENT - After currentUserMessage is defined\n        console.log('🚨 API ROUTE DEBUG: Intelligence pipeline starting...');\n        console.log('📍 Message received:', currentUserMessage.content);\n        console.log('📊 Session ID:', sessionId);"
+    }
+  },
+
+  "validation_test": {
+    "action": "Test with 'hello' after moving debug code",
+    "expected_result": "Server error should disappear and console should show debug logs",
+    "success_criteria": [
+      "No more 'currentUserMessage before initialization' error",
+      "Console shows: '🚨 API ROUTE DEBUG: Intelligence pipeline starting...'",
+      "Console shows: '📍 Message received: hello'",
+      "Intelligence system debug logs start appearing"
+    ]
+  },
+
+  "next_step": "Once server error is fixed, we should see the Intelligence system debug logs and can determine why fallback patterns aren't matching"
+}
