@@ -1,0 +1,399 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-01-24",
+    "domain": "ui",
+    "description": "STEVIE's curated UI component knowledge base with tier-based quality system"
+  },
+  "components": {
+    "button": {
+      "component": "button",
+      "domain": "ui",
+      "confidence": 0.95,
+      "tier": 1,
+      "recommendations": {
+        "best_practices": [
+          "Use semantic <button> elements for accessibility",
+          "Implement proper focus states and keyboard navigation",
+          "Include loading states for async actions",
+          "Provide clear visual feedback for different states",
+          "Use appropriate ARIA labels for screen readers",
+          "Ensure minimum 44px touch target size"
+        ],
+        "recommended_libraries": [
+          {
+            "name": "Tailark",
+            "reason": "STEVIE's #1 choice - uses standard shadcn registry with zero extra dependencies",
+            "use_case": "Any button implementation - pure Tailwind CSS",
+            "tier": 1,
+            "npm_package": "shadcn-ui",
+            "documentation_url": "https://tailark.com/",
+            "installation_snippet": "npx shadcn@latest add button",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["tailwindcss", "react"],
+              "known_issues": []
+            }
+          },
+          {
+            "name": "Magic UI",
+            "reason": "Identical to shadcn process with 150+ components ready",
+            "use_case": "Advanced button variants and animations",
+            "tier": 1,
+            "npm_package": "magicui",
+            "documentation_url": "https://magicui.design/",
+            "installation_snippet": "npx magicui-cli add button",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["tailwindcss", "react", "shadcn/ui"],
+              "known_issues": []
+            }
+          },
+          {
+            "name": "shadcn/ui",
+            "reason": "Foundation for all other libraries, excellent TypeScript support",
+            "use_case": "Standard button implementation",
+            "tier": 1,
+            "npm_package": "@shadcn/ui",
+            "documentation_url": "https://ui.shadcn.com/docs/components/button",
+            "installation_snippet": "npx shadcn@latest add button",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["tailwindcss", "react"],
+              "known_issues": []
+            }
+          }
+        ],
+        "code_examples": [
+          {
+            "title": "Accessible Button with Loading State",
+            "description": "Professional button with proper accessibility and loading handling",
+            "code": "const Button = ({ children, loading, onClick, variant = 'default', ...props }) => {\n  return (\n    <button\n      onClick={onClick}\n      disabled={loading}\n      aria-disabled={loading}\n      className={cn(\n        'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',\n        'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',\n        'disabled:pointer-events-none disabled:opacity-50',\n        {\n          'bg-primary text-primary-foreground shadow hover:bg-primary/90': variant === 'default',\n          'bg-secondary text-secondary-foreground hover:bg-secondary/80': variant === 'secondary'\n        },\n        'h-9 px-4 py-2'\n      )}\n      {...props}\n    >\n      {loading && <Loader2 className=\"mr-2 h-4 w-4 animate-spin\" />}\n      {loading ? 'Loading...' : children}\n    </button>\n  );\n};",
+            "language": "tsx",
+            "complexity": "simple"
+          }
+        ],
+        "anti_patterns": [
+          "Using div elements instead of button for clickable actions",
+          "Missing keyboard navigation support",
+          "No loading or disabled states",
+          "Poor contrast ratios that fail accessibility standards",
+          "Buttons without proper semantic meaning"
+        ],
+        "accessibility_notes": [
+          "Always use semantic button elements for interactive actions",
+          "Provide aria-label for icon-only buttons",
+          "Ensure proper color contrast (4.5:1 for normal text)",
+          "Test with keyboard navigation and screen readers",
+          "Use aria-describedby for additional context"
+        ],
+        "performance_tips": [
+          "Use CSS transitions instead of JavaScript animations",
+          "Avoid inline styles for better caching and performance",
+          "Consider button size impact on cumulative layout shift",
+          "Use proper semantic HTML to reduce accessibility tree complexity"
+        ]
+      },
+      "context_relevance": {
+        "simple_projects": true,
+        "enterprise_projects": true,
+        "prototypes": true
+      },
+      "estimated_tokens": 45,
+      "fallback_response": "I'll help you create a professional button component using Tailark (STEVIE's #1 choice) with proper accessibility and loading states.",
+      "stevie_integration": {
+        "rating": "⭐⭐⭐⭐⭐",
+        "implementation_notes": [
+          "Direct registry access with zero friction",
+          "Standard shadcn workflow - no learning curve",
+          "No dependency conflicts with existing setup"
+        ]
+      }
+    },
+    
+    "form": {
+      "component": "form",
+      "domain": "ui",
+      "confidence": 0.90,
+      "tier": 2,
+      "recommendations": {
+        "best_practices": [
+          "Use React Hook Form for optimal performance and minimal re-renders",
+          "Implement Zod validation schemas for type safety",
+          "Provide real-time validation feedback without being intrusive",
+          "Include proper labels and error messages",
+          "Handle form submission states properly",
+          "Use controlled components for complex validation logic"
+        ],
+        "recommended_libraries": [
+          {
+            "name": "Shadcn Form Builder",
+            "reason": "Perfect shadcn integration - generates clean code that follows patterns exactly",
+            "use_case": "Visual form building with perfect code output",
+            "tier": 1,
+            "npm_package": "react-hook-form",
+            "documentation_url": "https://shadcnui-form.com/",
+            "installation_snippet": "Use playground, then copy generated code",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["react-hook-form", "zod", "shadcn/ui"],
+              "known_issues": []
+            }
+          },
+          {
+            "name": "React Hook Form + Zod",
+            "reason": "Best performance with type-safe validation schemas",
+            "use_case": "Production forms with complex validation",
+            "tier": 1,
+            "npm_package": "react-hook-form",
+            "documentation_url": "https://react-hook-form.com/",
+            "installation_snippet": "npm install react-hook-form zod @hookform/resolvers",
+            "stevie_compatibility": {
+              "registry_support": "manual",
+              "setup_complexity": "managed-setup",
+              "dependency_chain": ["react-hook-form", "zod", "@hookform/resolvers"],
+              "known_issues": []
+            }
+          },
+          {
+            "name": "Formik + Yup",
+            "reason": "Mature form library with extensive ecosystem",
+            "use_case": "Complex forms with dynamic fields and validation",
+            "tier": 2,
+            "npm_package": "formik",
+            "documentation_url": "https://formik.org/",
+            "installation_snippet": "npm install formik yup",
+            "stevie_compatibility": {
+              "registry_support": "manual",
+              "setup_complexity": "managed-setup",
+              "dependency_chain": ["formik", "yup"],
+              "known_issues": ["Heavier bundle size", "More complex setup"]
+            }
+          }
+        ],
+        "code_examples": [
+          {
+            "title": "Professional Form with Validation",
+            "description": "Complete form implementation with React Hook Form and Zod",
+            "code": "const formSchema = z.object({\n  email: z.string().email('Please enter a valid email'),\n  password: z.string().min(8, 'Password must be at least 8 characters'),\n  confirmPassword: z.string()\n}).refine((data) => data.password === data.confirmPassword, {\n  message: \"Passwords don't match\",\n  path: [\"confirmPassword\"]\n});\n\nconst SignupForm = () => {\n  const form = useForm({\n    resolver: zodResolver(formSchema),\n    defaultValues: { email: '', password: '', confirmPassword: '' }\n  });\n  \n  const onSubmit = async (values) => {\n    try {\n      // Handle form submission\n      console.log(values);\n    } catch (error) {\n      console.error(error);\n    }\n  };\n  \n  return (\n    <Form {...form}>\n      <form onSubmit={form.handleSubmit(onSubmit)} className=\"space-y-6\">\n        <FormField\n          control={form.control}\n          name=\"email\"\n          render={({ field }) => (\n            <FormItem>\n              <FormLabel>Email</FormLabel>\n              <FormControl>\n                <Input placeholder=\"Enter your email\" {...field} />\n              </FormControl>\n              <FormMessage />\n            </FormItem>\n          )}\n        />\n        <Button type=\"submit\" disabled={form.formState.isSubmitting}>\n          {form.formState.isSubmitting ? 'Creating Account...' : 'Sign Up'}\n        </Button>\n      </form>\n    </Form>\n  );\n};",
+            "language": "tsx",
+            "complexity": "moderate"
+          }
+        ],
+        "anti_patterns": [
+          "Using uncontrolled inputs without proper validation",
+          "Missing error handling and user feedback",
+          "Validating on every keystroke causing performance issues",
+          "Not handling form submission states",
+          "Complex state management when React Hook Form would simplify"
+        ],
+        "accessibility_notes": [
+          "Associate all labels with inputs using htmlFor or nested structure",
+          "Provide clear error messages with aria-describedby",
+          "Use fieldset and legend for grouped form elements",
+          "Ensure logical tab order through all form fields",
+          "Announce form submission status to screen readers"
+        ],
+        "performance_tips": [
+          "Use React Hook Form to minimize component re-renders",
+          "Implement debounced validation for real-time feedback",
+          "Use field-level validation instead of full form validation when possible",
+          "Consider lazy validation for complex schemas"
+        ]
+      },
+      "context_relevance": {
+        "simple_projects": false,
+        "enterprise_projects": true,
+        "prototypes": false
+      },
+      "estimated_tokens": 75,
+      "fallback_response": "I'll help you build a robust form using Shadcn Form Builder for visual creation and React Hook Form + Zod for validation. What fields do you need?",
+      "stevie_integration": {
+        "rating": "⭐⭐⭐⭐⭐",
+        "implementation_notes": [
+          "Shadcn Form Builder generates perfect code",
+          "Standard dependency chain - well supported",
+          "Great for STEVIE's form generation needs"
+        ]
+      }
+    },
+
+    "modal": {
+      "component": "modal",
+      "domain": "ui", 
+      "confidence": 0.85,
+      "tier": 2,
+      "recommendations": {
+        "best_practices": [
+          "Implement proper focus management and trap focus within modal",
+          "Use backdrop click and ESC key to close",
+          "Prevent body scroll when modal is open",
+          "Provide clear close actions and visual hierarchy",
+          "Use semantic dialog element for accessibility",
+          "Handle portal rendering to avoid z-index issues"
+        ],
+        "recommended_libraries": [
+          {
+            "name": "shadcn/ui Dialog",
+            "reason": "Built on Radix UI with excellent accessibility and customization",
+            "use_case": "Standard modal/dialog implementation",
+            "tier": 1,
+            "npm_package": "@shadcn/ui",
+            "documentation_url": "https://ui.shadcn.com/docs/components/dialog",
+            "installation_snippet": "npx shadcn@latest add dialog",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["@radix-ui/react-dialog", "tailwindcss"],
+              "known_issues": []
+            }
+          },
+          {
+            "name": "Motion Primitives Modal",
+            "reason": "Beautiful animations with proper accessibility",
+            "use_case": "Modals with smooth entrance/exit animations",
+            "tier": 2,
+            "npm_package": "framer-motion",
+            "documentation_url": "https://motion-primitives.com/",
+            "installation_snippet": "npx motion-primitives add modal OR npx shadcn@latest add modal",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "managed-setup",
+              "dependency_chain": ["framer-motion", "@radix-ui/react-dialog"],
+              "known_issues": ["Requires framer-motion dependency"]
+            }
+          }
+        ],
+        "code_examples": [
+          {
+            "title": "Accessible Modal with Proper Focus Management",
+            "description": "Complete modal implementation with all accessibility features",
+            "code": "const Modal = ({ isOpen, onClose, title, children }) => {\n  return (\n    <Dialog open={isOpen} onOpenChange={onClose}>\n      <DialogContent className=\"sm:max-w-[425px]\">\n        <DialogHeader>\n          <DialogTitle>{title}</DialogTitle>\n          <DialogDescription>\n            Make changes to your profile here. Click save when you're done.\n          </DialogDescription>\n        </DialogHeader>\n        <div className=\"grid gap-4 py-4\">\n          {children}\n        </div>\n        <DialogFooter>\n          <Button type=\"submit\">Save changes</Button>\n        </DialogFooter>\n      </DialogContent>\n    </Dialog>\n  );\n};",
+            "language": "tsx",
+            "complexity": "simple"
+          }
+        ],
+        "anti_patterns": [
+          "Using div overlays instead of proper dialog elements",
+          "Missing focus management and keyboard navigation",
+          "No backdrop click handling",
+          "Modals that don't prevent body scroll",
+          "Poor mobile responsiveness and viewport handling"
+        ],
+        "accessibility_notes": [
+          "Use dialog role and proper ARIA attributes",
+          "Implement focus trapping within the modal",
+          "Return focus to trigger element when closed",
+          "Provide multiple ways to close (X button, ESC, backdrop)",
+          "Ensure proper heading structure within modal content"
+        ]
+      },
+      "context_relevance": {
+        "simple_projects": true,
+        "enterprise_projects": true,
+        "prototypes": true
+      },
+      "estimated_tokens": 65,
+      "fallback_response": "I'll create a fully accessible modal using shadcn/ui Dialog with proper focus management and keyboard navigation.",
+      "stevie_integration": {
+        "rating": "⭐⭐⭐⭐⚪",
+        "implementation_notes": [
+          "shadcn Dialog is perfect for most use cases",
+          "Motion Primitives available for enhanced animations",
+          "Standard accessibility built-in"
+        ]
+      }
+    },
+
+    "navigation": {
+      "component": "navigation",
+      "domain": "ui",
+      "confidence": 0.88,
+      "tier": 2,
+      "recommendations": {
+        "best_practices": [
+          "Implement responsive navigation with mobile-first approach",
+          "Use semantic nav element and proper heading hierarchy",
+          "Provide clear active states and visual hierarchy",
+          "Include skip navigation links for accessibility",
+          "Handle keyboard navigation and focus management",
+          "Consider sticky/fixed positioning impact on layout"
+        ],
+        "recommended_libraries": [
+          {
+            "name": "Tailark Navigation Blocks",
+            "reason": "Pre-built responsive navigation patterns with zero friction",
+            "use_case": "Quick implementation of professional navigation",
+            "tier": 1,
+            "npm_package": "shadcn-ui",
+            "documentation_url": "https://tailark.com/",
+            "installation_snippet": "npx tailark-cli add navigation-01",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["tailwindcss"],
+              "known_issues": []
+            }
+          },
+          {
+            "name": "shadcn Navigation Menu",
+            "reason": "Accessible dropdown navigation with Radix UI foundation",
+            "use_case": "Complex navigation with dropdowns and mega menus",
+            "tier": 1,
+            "npm_package": "@shadcn/ui",
+            "documentation_url": "https://ui.shadcn.com/docs/components/navigation-menu",
+            "installation_snippet": "npx shadcn@latest add navigation-menu",
+            "stevie_compatibility": {
+              "registry_support": "shadcn",
+              "setup_complexity": "zero-friction",
+              "dependency_chain": ["@radix-ui/react-navigation-menu"],
+              "known_issues": []
+            }
+          }
+        ],
+        "code_examples": [
+          {
+            "title": "Responsive Navigation with Mobile Menu",
+            "description": "Complete navigation with mobile hamburger menu and accessibility",
+            "code": "const Navigation = () => {\n  const [isOpen, setIsOpen] = useState(false);\n  \n  return (\n    <nav className=\"bg-background border-b\">\n      <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">\n        <div className=\"flex justify-between h-16\">\n          <div className=\"flex items-center\">\n            <Logo />\n            <div className=\"hidden md:ml-6 md:flex md:space-x-8\">\n              <NavLink href=\"/\" active>Home</NavLink>\n              <NavLink href=\"/about\">About</NavLink>\n              <NavLink href=\"/contact\">Contact</NavLink>\n            </div>\n          </div>\n          \n          <div className=\"md:hidden flex items-center\">\n            <Button variant=\"ghost\" onClick={() => setIsOpen(!isOpen)}>\n              <Menu className=\"h-6 w-6\" />\n            </Button>\n          </div>\n        </div>\n      </div>\n      \n      {/* Mobile menu */}\n      {isOpen && (\n        <div className=\"md:hidden\">\n          <div className=\"px-2 pt-2 pb-3 space-y-1\">\n            <MobileNavLink href=\"/\">Home</MobileNavLink>\n            <MobileNavLink href=\"/about\">About</MobileNavLink>\n            <MobileNavLink href=\"/contact\">Contact</MobileNavLink>\n          </div>\n        </div>\n      )}\n    </nav>\n  );\n};",
+            "language": "tsx",
+            "complexity": "moderate"
+          }
+        ],
+        "anti_patterns": [
+          "Using divs instead of semantic nav elements",
+          "Missing mobile-responsive design",
+          "Poor keyboard navigation support",
+          "No active state indicators",
+          "Complex mega menus without proper accessibility"
+        ],
+        "accessibility_notes": [
+          "Use semantic nav element for main navigation",
+          "Provide skip navigation links for screen readers",
+          "Implement proper ARIA attributes for dropdown menus",
+          "Ensure keyboard navigation works for all menu items",
+          "Use clear, descriptive link text"
+        ]
+      },
+      "context_relevance": {
+        "simple_projects": true,
+        "enterprise_projects": true,
+        "prototypes": true
+      },
+      "estimated_tokens": 70,
+      "fallback_response": "I'll create a responsive navigation using Tailark blocks for quick implementation with proper mobile support and accessibility.",
+      "stevie_integration": {
+        "rating": "⭐⭐⭐⭐⭐",
+        "implementation_notes": [
+          "Tailark provides ready-to-use navigation blocks",
+          "shadcn Navigation Menu for complex dropdowns",
+          "Perfect for STEVIE's needs with zero friction"
+        ]
+      }
+    }
+  }
+}

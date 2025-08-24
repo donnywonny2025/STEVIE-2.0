@@ -1,0 +1,84 @@
+{
+  "task_type": "CRITICAL_LOGIC_FIXES",
+  "priority": "URGENT",
+  "description": "Fix fundamental logic issues in STEVIE app that cause all queries to trigger file operations instead of simple conversations",
+  "target_file": "stevie-app/bolt.diy/app/routes/api.chat.ts",
+  
+  "problem_analysis": {
+    "issue_1": "Chat mode (discuss vs build) is extracted but completely ignored - every query triggers build tools",
+    "issue_2": "toolChoice is hardcoded to 'auto' which forces every query to attempt file operations",
+    "issue_3": "Cached response logic uses return; but doesn't properly close the dataStream",
+    "issue_4": "Simple queries like 'hello' should be conversational, not trigger terminal builds",
+    "root_cause": "The application doesn't differentiate between conversational queries and code generation requests"
+  },
+
+  "fixes_required": [
+    {
+      "fix_id": "chat_mode_logic",
+      "description": "Implement proper chat mode handling",
+      "location": "Around line 424-428 (StreamingOptions configuration)",
+      "current_code": "const options: StreamingOptions = {\n  supabaseConnection: supabase,\n  toolChoice: 'auto',\n  tools: mcpService.toolsWithoutExecute,",
+      "fixed_code": "const options: StreamingOptions = {\n  supabaseConnection: supabase,\n  toolChoice: chatMode === 'build' ? 'auto' : 'none',\n  tools: chatMode === 'build' ? mcpService.toolsWithoutExecute : {},"
+    },
+    
+    {
+      "fix_id": "cached_response_completion", 
+      "description": "Fix cached response stream completion",
+      "location": "Around line 170-192 (cached response logic)",
+      "current_code": "// Return cached response directly (bypassing entire context building)\nconst cachedResponse = getCachedResponse(analysis, currentUserMessage.content);\nif (cachedResponse) {\n  // Write cached response to stream - using writeData for text\n  dataStream.writeData({\n    type: 'text',\n    content: cachedResponse\n  });\n  \n  // Write token usage annotation\n  dataStream.writeMessageAnnotation({\n    type: 'tokenUsage',\n    data: {\n      queryType: analysis.query_type,\n      tokensUsed: analysis.fallback_strategy.estimated_tokens,\n      tokensSaved: tokenDisplay.tokens_saved,\n      efficiencyGain: tokenDisplay.efficiency_gain,\n      source: 'cached_response'\n    }\n  });\n  \n  return;\n}",
+      "fixed_code": "// Return cached response directly (bypassing entire context building)\nconst cachedResponse = getCachedResponse(analysis, currentUserMessage.content);\nif (cachedResponse) {\n  // Write cached response as proper text chunks\n  for (const chunk of cachedResponse.split(' ')) {\n    dataStream.writeData({\n      type: 'text-delta',\n      textDelta: chunk + ' '\n    });\n  }\n  \n  // Write final completion\n  dataStream.writeMessageAnnotation({\n    type: 'usage',\n    value: {\n      completionTokens: analysis.fallback_strategy.estimated_tokens,\n      promptTokens: 0,\n      totalTokens: analysis.fallback_strategy.estimated_tokens,\n    }\n  });\n  \n  // Write token usage annotation\n  dataStream.writeMessageAnnotation({\n    type: 'tokenUsage',\n    data: {\n      queryType: analysis.query_type,\n      tokensUsed: analysis.fallback_strategy.estimated_tokens,\n      tokensSaved: tokenDisplay.tokens_saved,\n      efficiencyGain: tokenDisplay.efficiency_gain,\n      source: 'cached_response'\n    }\n  });\n  \n  return; // This now properly exits the execute function\n}"
+    },
+
+    {
+      "fix_id": "simple_conversation_mode",
+      "description": "Add logic to detect conversational vs coding queries",
+      "location": "After line 145 (after query analysis)",
+      "insert_code": "// 🗣️ CONVERSATION MODE: Handle simple conversational queries without tools\nconst isConversational = analysis.query_type === 'SIMPLE' || \n  analysis.query_type === 'GREETING' || \n  analysis.query_type === 'QUESTION' ||\n  analysis.fallback_strategy !== null;\n\n// Force chatMode to 'discuss' for conversational queries\nif (isConversational && !analysis.requires_code_generation) {\n  logger.info(`🗣️ Conversational query detected - forcing discuss mode`);\n  chatMode = 'discuss';\n}"
+    },
+
+    {
+      "fix_id": "debug_logging_enhancement",
+      "description": "Add better debug logging to track the flow",
+      "location": "After line 145 (after query analysis)", 
+      "insert_code": "// 🔍 DEBUG: Log the decision flow\nlogger.info(`📋 Chat Analysis:`, {\n  queryType: analysis.query_type,\n  chatMode: chatMode,\n  hasFallbackStrategy: !!analysis.fallback_strategy,\n  requiresCodeGeneration: analysis.requires_code_generation || false,\n  confidence: analysis.confidence_score\n});"
+    }
+  ],
+
+  "testing_instructions": {
+    "test_1": {
+      "input": "hello",
+      "expected_behavior": "Should return cached greeting immediately, no file operations, ~60 tokens",
+      "debug_output": "Should show 'Conversational query detected - forcing discuss mode'"
+    },
+    "test_2": {
+      "input": "create a react component",
+      "expected_behavior": "Should use build mode, trigger file operations, use tools",
+      "debug_output": "Should show 'build' mode with toolChoice: 'auto'"
+    },
+    "test_3": {
+      "input": "how are you?",
+      "expected_behavior": "Should be conversational, no file operations, discuss mode",
+      "debug_output": "Should show 'discuss' mode with toolChoice: 'none'"
+    }
+  },
+
+  "startup_commands": [
+    "cd /project/workspace/stevie-app/bolt.diy",
+    "npm install",
+    "npm run dev"
+  ],
+
+  "success_criteria": [
+    "Simple queries like 'hello' return text immediately without triggering terminal builds",
+    "Complex coding queries still work with file operations in build mode", 
+    "Chat mode properly controls whether tools are used",
+    "Cached responses display properly in the frontend",
+    "Token efficiency is maintained for simple queries"
+  ],
+
+  "additional_notes": {
+    "critical_insight": "The core issue is that EVERY query was being treated as a coding request because chatMode was ignored and toolChoice was hardcoded to 'auto'. This caused simple greetings to attempt file operations.",
+    "frontend_impact": "Once the backend properly streams cached responses using text-delta format, the frontend should display them correctly",
+    "performance_impact": "This fix should dramatically improve performance for conversational queries by avoiding unnecessary tool invocations"
+  }
+}
