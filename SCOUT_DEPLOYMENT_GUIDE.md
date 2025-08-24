@@ -112,7 +112,16 @@ node test-scout-intelligence.js
 ## 🤝 Multi-Agent Coordination
 - **Update Status**: Edit `workspace/WORKSPACE_COORDINATION.json`
 - **Report Progress**: Use JSON format in `handoffs/` directory
+- **Real-Time Collaboration**: Communicate directly with Qoder Chat through workspace protocols
 - **Emergency Contact**: Check `handoffs/SCOUT_COMPREHENSIVE_BRIEFING.json`
+- **No Isolation**: Full agent interaction and collaboration supported
+
+### 💬 Communication with Qoder Chat
+You can interact directly with Qoder Chat (currently ACTIVE) through:
+- Workspace coordination file updates
+- JSON handoff protocols
+- Real-time collaboration channels
+- Established multi-agent communication system
 
 ## 🆘 Troubleshooting
 

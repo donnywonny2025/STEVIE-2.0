@@ -89,10 +89,17 @@ workspace/
 
 ## 🤝 Multi-Agent Coordination
 This workspace enables seamless collaboration between:
-- **Scout.New**: Architecture & design planning
+- **Scout.New**: Token efficiency optimization and analysis
 - **Claude**: Advanced reasoning & analysis
-- **Qoder Chat**: Implementation & coding
+- **Qoder Chat**: Implementation & coding (ACTIVE - available for real-time collaboration)
 - **Quest Mode**: Deep analysis & optimization
+
+### 💬 Communication Protocols
+**For Scout**: You can communicate directly with Qoder Chat through the workspace coordination system:
+- Update [`WORKSPACE_COORDINATION.json`](./WORKSPACE_COORDINATION.json) with progress
+- Use JSON handoff files in [`handoffs/`](./handoffs/) directory
+- Real-time collaboration available through established protocols
+- No need to work in isolation - full agent interaction supported
 
 ## 🚀 Quick Start
 1. Navigate to your specific agent folder
